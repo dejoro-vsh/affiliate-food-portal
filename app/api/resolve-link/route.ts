@@ -46,17 +46,26 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
 
   let finalUrl = url;
 
-  // 4. Promise.race เพื่อจับเวลาไม่ให้เกิน 8 วินาที (ป้องกัน Vercel Crash)
-  const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout after 8 seconds')), 8000));
+  let isTimeout = false;
+  let errorMessage = null;
+
+  // 4. Promise.race เพื่อจับเวลาไม่ให้เกิน 8 วินาที
+  const timeoutPromise = new Promise((_, reject) => setTimeout(() => {
+    isTimeout = true;
+    reject(new Error('Timeout after 8 seconds'));
+  }, 8000));
   
   const gotoPromise = async () => {
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    // ให้เวลามันรันคำสั่งเด้งหน้าเว็บสักนิด
+    await new Promise(r => setTimeout(r, 2000));
     return page.url();
   };
 
   try {
     finalUrl = await Promise.race([gotoPromise(), timeoutPromise]) as string;
   } catch (e: any) {
+    errorMessage = e.message;
     console.error("Puppeteer resolve error/timeout:", e.message);
   } finally {
     await browser.close();
@@ -81,7 +90,11 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     status: 'success',
     original_url: url,
     resolved_url: resolvedUrl,
-    source: 'live_compute'
+    source: 'live_compute',
+    debug: {
+      is_timeout: isTimeout,
+      error_message: errorMessage
+    }
   };
 }
 
