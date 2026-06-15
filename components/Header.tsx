@@ -21,7 +21,7 @@ export default function Header() {
             justifyContent: 'center'
           }}>
             <img 
-              src="/images/flashfoodie.jpg" 
+              src="/images/flashfoodie_logo.png" 
               alt="Flash Foodie Logo" 
               style={{ width: 'auto', height: '100%', objectFit: 'contain' }} 
             />
