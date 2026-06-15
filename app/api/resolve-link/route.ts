@@ -29,6 +29,9 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
   }
 
   let finalUrl = url;
+  let apiStatus = null;
+  let apiData: any = null;
+  let pageTitle = null;
 
   // 2. Try Shopee Internal API first (Lightning fast, no Puppeteer needed)
   try {
@@ -43,14 +46,20 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
           'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15'
         }
       });
+      apiStatus = res.status;
       if (res.ok) {
         const json = await res.json();
+        apiData = json;
         if (json && json.data && json.data.url) {
           finalUrl = json.data.url;
         }
+      } else {
+        apiData = await res.text();
       }
     }
-  } catch(e) {}
+  } catch(e: any) {
+    apiData = e.message;
+  }
 
   // 3. Fallback to Puppeteer if API failed
   let isTimeout = false;
@@ -83,6 +92,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
 
     try {
       finalUrl = await Promise.race([gotoPromise(), timeoutPromise]) as string;
+      pageTitle = await page.title();
     } catch (e: any) {
       errorMessage = e.message;
       console.error("Puppeteer resolve error/timeout:", e.message);
@@ -113,7 +123,10 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     source: 'live_compute',
     debug: {
       is_timeout: isTimeout,
-      error_message: errorMessage
+      error_message: errorMessage,
+      api_status: apiStatus,
+      api_data: apiData,
+      page_title: pageTitle
     }
   };
 }
