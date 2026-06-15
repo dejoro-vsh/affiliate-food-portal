@@ -5,6 +5,8 @@ import chromium from '@sparticuz/chromium';
 
 // กำหนดขีดจำกัดเวลา (Optional)
 export const maxDuration = 10; 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Initialize Redis 
 const redis = new Redis({
