@@ -34,7 +34,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
     executablePath: executablePath || undefined,
-    headless: chromium.headless === true ? true : chromium.headless === 'new' ? true : false,
+    headless: chromium.headless as any,
   });
 
   const page = await browser.newPage();
