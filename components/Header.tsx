@@ -13,9 +13,7 @@ export default function Header() {
       <div className="main-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            borderRadius: '8px', 
+            height: '80px', 
             overflow: 'hidden',
             backgroundColor: '#fff',
             display: 'flex',
@@ -25,12 +23,9 @@ export default function Header() {
             <img 
               src="/images/flashfoodie.jpg" 
               alt="Flash Foodie Logo" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              style={{ width: 'auto', height: '100%', objectFit: 'contain' }} 
             />
           </div>
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Flash Foodie
-          </span>
         </Link>
         <nav>
           <Link href="/about" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>
