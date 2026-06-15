@@ -14,8 +14,8 @@ export default function HeroSection() {
       
       <div style={{ maxWidth: '400px', margin: '0 auto', borderRadius: '1rem', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
         <img 
-          src="/images/flashfoodie.jpg" 
-          alt="Flash Foodie Logo" 
+          src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=400" 
+          alt="LINE Chat Mockup" 
           style={{ width: '100%', height: 'auto', display: 'block' }} 
         />
       </div>

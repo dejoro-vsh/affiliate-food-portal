@@ -1,4 +1,5 @@
 import "./globals.css";
+import Header from "@/components/Header";
 
 export const metadata = {
   title: "The Daily Foodie: บอทผู้ช่วยดึงโปรโมชันเดลิเวอรี่",
@@ -38,7 +39,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
