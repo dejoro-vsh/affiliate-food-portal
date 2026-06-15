@@ -84,6 +84,19 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
       reject(new Error('Timeout after 8 seconds'));
     }, 8000));
     
+    // ดักจับ Network Response ทุกเส้นที่เบราว์เซอร์โหลด
+    let interceptedUrl = '';
+    page.on('response', async (response) => {
+      if (response.url().includes('is_short_url')) {
+        try {
+          const json = await response.json();
+          if (json && json.data && json.data.url) {
+            interceptedUrl = json.data.url;
+          }
+        } catch (e) {}
+      }
+    });
+
     const gotoPromise = async () => {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
       await new Promise(r => setTimeout(r, 2000));
@@ -93,33 +106,11 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     try {
       await Promise.race([gotoPromise(), timeoutPromise]);
       pageTitle = await page.title();
-      
-      // ดึง Canonical URL หรือ og:url จากในหน้าเว็บ
-      let canonicalUrl = await page.evaluate(() => {
-        const canonical = document.querySelector('link[rel="canonical"]');
-        if (canonical && canonical.getAttribute('href')) return canonical.getAttribute('href');
-        const ogUrl = document.querySelector('meta[property="og:url"]');
-        if (ogUrl && ogUrl.getAttribute('content')) return ogUrl.getAttribute('content');
-        return null;
-      });
 
-      if (!canonicalUrl || canonicalUrl === url) {
-         const html = await page.content();
-         // ค้นหาลิงก์สินค้ารูปแบบ https://shopee.co.th/...-i.SHOPID.ITEMID
-         const productMatch = html.match(/https:\/\/shopee\.co\.th\/[^\s"']+-i\.\d+\.\d+/i);
-         if (productMatch) {
-            canonicalUrl = productMatch[0];
-         } else {
-            // ค้นหา Universal Link
-            const uniMatch = html.match(/https:\/\/shopee\.co\.th\/universal-link[^\s"']+/i);
-            if (uniMatch) canonicalUrl = uniMatch[0];
-         }
-      }
-
-      if (canonicalUrl && canonicalUrl !== url) {
-        finalUrl = canonicalUrl;
+      if (interceptedUrl) {
+         finalUrl = interceptedUrl;
       } else {
-        finalUrl = await page.url();
+         finalUrl = await page.url();
       }
 
     } catch (e: any) {
