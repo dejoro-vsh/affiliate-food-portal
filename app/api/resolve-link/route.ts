@@ -103,9 +103,19 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
       return page.url();
     };
 
+    let allPageLinks: string[] = [];
+
     try {
       await Promise.race([gotoPromise(), timeoutPromise]);
       pageTitle = await page.title();
+
+      // ดึงทุกลิงก์ที่โผล่บนหน้าเว็บ
+      allPageLinks = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll('a'))
+          .map(a => a.href)
+          .filter(href => href && href.includes('shopee'));
+        return Array.from(new Set(links));
+      });
 
       if (interceptedUrl) {
          finalUrl = interceptedUrl;
@@ -146,7 +156,8 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
       error_message: errorMessage,
       api_status: apiStatus,
       api_data: apiData,
-      page_title: pageTitle
+      page_title: pageTitle,
+      all_links: allPageLinks
     }
   };
 }
