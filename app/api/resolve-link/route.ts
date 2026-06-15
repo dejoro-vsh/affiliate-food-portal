@@ -118,7 +118,24 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
         return Array.from(new Set(links));
       });
 
-      if (interceptedUrl) {
+      // ค้นหา True Destination URL จาก Deep Link
+      let extractedUrl = '';
+      for (const link of allPageLinks) {
+        if (link.startsWith('shopeeth://')) {
+          try {
+            const shopeeUrlObj = new URL(link);
+            const navigateUrl = shopeeUrlObj.searchParams.get('navigate_url') || shopeeUrlObj.searchParams.get('url');
+            if (navigateUrl) {
+              extractedUrl = navigateUrl;
+              break;
+            }
+          } catch(e) {}
+        }
+      }
+
+      if (extractedUrl) {
+         finalUrl = extractedUrl;
+      } else if (interceptedUrl) {
          finalUrl = interceptedUrl;
       } else {
          finalUrl = await page.url();
