@@ -8,9 +8,6 @@
     "start": "next start",
     "lint": "next lint"
   },
-  "engines": {
-    "node": "18.x"
-  },
   "dependencies": {
     "@sparticuz/chromium": "123.0.1",
     "@upstash/redis": "^1.31.3",
