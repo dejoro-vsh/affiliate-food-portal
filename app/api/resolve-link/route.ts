@@ -149,15 +149,16 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     }
   }
 
-  // 5. ฝังรหัส Affiliate
+  // 5. ฝังรหัส Affiliate (เว้นไว้ให้ผู้ใช้งานนำไปประยุกต์ต่อ)
   let resolvedUrl = finalUrl;
-  if (inject_affiliate && resolvedUrl !== url) {
-    try {
-      const urlObj = new URL(resolvedUrl);
-      urlObj.searchParams.set('aff_id', 'FlashFoodie'); // ตัวอย่างการฝัง Tracking
-      resolvedUrl = urlObj.toString();
-    } catch(e) {}
-  }
+  // if (inject_affiliate && resolvedUrl !== url) {
+  //   try {
+  //     const urlObj = new URL(resolvedUrl);
+  //     // ตัวอย่างการฝัง Tracking (Shopee มักใช้ custom_params หรือต้องนำไปแปลงในเว็บ Affiliate อีกที)
+  //     // urlObj.searchParams.set('custom_params', 'YourSubID'); 
+  //     resolvedUrl = urlObj.toString();
+  //   } catch(e) {}
+  // }
 
   // 6. บันทึกลง Redis Cache (อายุ 7 วัน)
   if (resolvedUrl !== url) {
