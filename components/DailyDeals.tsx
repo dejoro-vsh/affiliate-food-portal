@@ -41,7 +41,7 @@ export default function DailyDeals() {
                 <span style={{ color: '#ef4444', fontSize: '1rem', fontWeight: 700 }}>{deal.discount}</span>
               </h3>
               <p>{deal.description}</p>
-              <Link href="#" className="btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+              <Link href="https://line.me/R/ti/p/@099kzkta" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
                 รับสิทธิ์ผ่าน LINE
               </Link>
             </div>

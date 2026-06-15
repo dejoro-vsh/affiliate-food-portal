@@ -25,7 +25,7 @@ export default function TrustSignals() {
           <div>
             <h3 style={{ marginBottom: '1rem' }}>ติดต่อ</h3>
             <p>อีเมล: contact@bizxthai.com</p>
-            <Link href="#" className="btn-primary" style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
+            <Link href="https://line.me/R/ti/p/@099kzkta" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
               เพิ่มเพื่อน LINE OA
             </Link>
           </div>

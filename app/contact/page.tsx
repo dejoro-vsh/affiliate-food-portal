@@ -13,7 +13,7 @@ export default function Contact() {
           </li>
           <li style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <strong>LINE Official Account:</strong> 
-            <Link href="#" style={{ color: 'var(--primary-color)', fontWeight: 500 }}>@TheDailyFoodie (เพิ่มเพื่อน)</Link>
+            <Link href="https://line.me/R/ti/p/@099kzkta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', fontWeight: 500 }}>@099kzkta (เพิ่มเพื่อน)</Link>
           </li>
         </ul>
         <Link href="/" className="btn-primary">กลับสู่หน้าหลัก</Link>
