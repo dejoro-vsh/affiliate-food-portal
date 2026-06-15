@@ -94,14 +94,27 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
       await Promise.race([gotoPromise(), timeoutPromise]);
       pageTitle = await page.title();
       
-      // ดึง Canonical URL หรือ og:url จากในหน้าเว็บ (เพราะหน้าเว็บแบบ SPA อาจจะไม่เปลี่ยน URL ด้านบน)
-      const canonicalUrl = await page.evaluate(() => {
+      // ดึง Canonical URL หรือ og:url จากในหน้าเว็บ
+      let canonicalUrl = await page.evaluate(() => {
         const canonical = document.querySelector('link[rel="canonical"]');
         if (canonical && canonical.getAttribute('href')) return canonical.getAttribute('href');
         const ogUrl = document.querySelector('meta[property="og:url"]');
         if (ogUrl && ogUrl.getAttribute('content')) return ogUrl.getAttribute('content');
-        return window.location.href;
+        return null;
       });
+
+      if (!canonicalUrl || canonicalUrl === url) {
+         const html = await page.content();
+         // ค้นหาลิงก์สินค้ารูปแบบ https://shopee.co.th/...-i.SHOPID.ITEMID
+         const productMatch = html.match(/https:\/\/shopee\.co\.th\/[^\s"']+-i\.\d+\.\d+/i);
+         if (productMatch) {
+            canonicalUrl = productMatch[0];
+         } else {
+            // ค้นหา Universal Link
+            const uniMatch = html.match(/https:\/\/shopee\.co\.th\/universal-link[^\s"']+/i);
+            if (uniMatch) canonicalUrl = uniMatch[0];
+         }
+      }
 
       if (canonicalUrl && canonicalUrl !== url) {
         finalUrl = canonicalUrl;
