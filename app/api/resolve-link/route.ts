@@ -34,6 +34,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
   let apiStatus = null;
   let apiData: any = null;
   let pageTitle = null;
+  let allPageLinks: string[] = [];
 
   // 2. Try Shopee Internal API first (Lightning fast, no Puppeteer needed)
   try {
@@ -104,8 +105,6 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
       await new Promise(r => setTimeout(r, 2000));
       return page.url();
     };
-
-    let allPageLinks: string[] = [];
 
     try {
       await Promise.race([gotoPromise(), timeoutPromise]);
