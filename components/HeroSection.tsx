@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function HeroSection() {
   return (
     <section className="section-padding" style={{ textAlign: 'center' }}>
-      <h1>The Daily Foodie: บอทผู้ช่วยดึงโปรโมชันเดลิเวอรี่และไอเดียมื้อเที่ยงรอบตัวคุณ</h1>
+      <h1>Flash Foodie: ส่งโปรโมชั่นเดลิเวอรี่ และ ไอเดียอาหารรอบตัวคุณ</h1>
       <p style={{ fontSize: '1.25rem', marginBottom: '2rem' }}>
         รับโปรโมชันสุดคุ้มจากร้านอาหารดังส่งตรงถึง LINE ของคุณทุกวัน ฟรี!
       </p>
@@ -14,8 +14,8 @@ export default function HeroSection() {
       
       <div style={{ maxWidth: '400px', margin: '0 auto', borderRadius: '1rem', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
         <img 
-          src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=400" 
-          alt="LINE Chat Mockup" 
+          src="/images/flashfoodie.jpg" 
+          alt="Flash Foodie Logo" 
           style={{ width: '100%', height: 'auto', display: 'block' }} 
         />
       </div>
