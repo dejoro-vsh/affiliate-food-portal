@@ -28,47 +28,67 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     };
   }
 
-  // 2. Setup Browser on Vercel
-  const executablePath = await chromium.executablePath(
-    "https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar"
-  );
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: executablePath || undefined,
-    headless: chromium.headless as any,
-  });
-
-  const page = await browser.newPage();
-  
-  // 3. ปลอมตัวเป็นมือถือ
-  await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1');
-
   let finalUrl = url;
 
+  // 2. Try Shopee Internal API first (Lightning fast, no Puppeteer needed)
+  try {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname.replace(/^\/+/, '');
+    if (path) {
+      const apiUrl = `https://spf.shopee.co.th/api/v4/pages/is_short_url/?path=${path}`;
+      const res = await fetch(apiUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15'
+        }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.data && json.data.url) {
+          finalUrl = json.data.url;
+        }
+      }
+    }
+  } catch(e) {}
+
+  // 3. Fallback to Puppeteer if API failed
   let isTimeout = false;
   let errorMessage = null;
 
-  // 4. Promise.race เพื่อจับเวลาไม่ให้เกิน 8 วินาที
-  const timeoutPromise = new Promise((_, reject) => setTimeout(() => {
-    isTimeout = true;
-    reject(new Error('Timeout after 8 seconds'));
-  }, 8000));
-  
-  const gotoPromise = async () => {
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-    // ให้เวลามันรันคำสั่งเด้งหน้าเว็บสักนิด
-    await new Promise(r => setTimeout(r, 2000));
-    return page.url();
-  };
+  if (finalUrl === url) {
+    const executablePath = await chromium.executablePath(
+      "https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar"
+    );
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: executablePath || undefined,
+      headless: chromium.headless as any,
+    });
 
-  try {
-    finalUrl = await Promise.race([gotoPromise(), timeoutPromise]) as string;
-  } catch (e: any) {
-    errorMessage = e.message;
-    console.error("Puppeteer resolve error/timeout:", e.message);
-  } finally {
-    await browser.close();
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1');
+
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => {
+      isTimeout = true;
+      reject(new Error('Timeout after 8 seconds'));
+    }, 8000));
+    
+    const gotoPromise = async () => {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await new Promise(r => setTimeout(r, 2000));
+      return page.url();
+    };
+
+    try {
+      finalUrl = await Promise.race([gotoPromise(), timeoutPromise]) as string;
+    } catch (e: any) {
+      errorMessage = e.message;
+      console.error("Puppeteer resolve error/timeout:", e.message);
+    } finally {
+      await browser.close();
+    }
   }
 
   // 5. ฝังรหัส Affiliate
