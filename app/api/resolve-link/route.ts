@@ -29,7 +29,9 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
   }
 
   // 2. Setup Browser on Vercel
-  const executablePath = await chromium.executablePath();
+  const executablePath = await chromium.executablePath(
+    "https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar"
+  );
   const browser = await puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
