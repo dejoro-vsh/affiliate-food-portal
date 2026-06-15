@@ -91,8 +91,24 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     };
 
     try {
-      finalUrl = await Promise.race([gotoPromise(), timeoutPromise]) as string;
+      await Promise.race([gotoPromise(), timeoutPromise]);
       pageTitle = await page.title();
+      
+      // ดึง Canonical URL หรือ og:url จากในหน้าเว็บ (เพราะหน้าเว็บแบบ SPA อาจจะไม่เปลี่ยน URL ด้านบน)
+      const canonicalUrl = await page.evaluate(() => {
+        const canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical && canonical.getAttribute('href')) return canonical.getAttribute('href');
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl && ogUrl.getAttribute('content')) return ogUrl.getAttribute('content');
+        return window.location.href;
+      });
+
+      if (canonicalUrl && canonicalUrl !== url) {
+        finalUrl = canonicalUrl;
+      } else {
+        finalUrl = await page.url();
+      }
+
     } catch (e: any) {
       errorMessage = e.message;
       console.error("Puppeteer resolve error/timeout:", e.message);
