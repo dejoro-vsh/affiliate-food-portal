@@ -35,6 +35,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
   let apiData: any = null;
   let pageTitle = null;
   let allPageLinks: string[] = [];
+  let scrapedData: any = null;
 
   // 2. Try Shopee Internal API first (Lightning fast, no Puppeteer needed)
   try {
@@ -118,6 +119,26 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
         return Array.from(new Set(links));
       });
 
+      // ดึงข้อมูลเมนู รูปภาพ ราคา (Heuristic Scraper)
+      scrapedData = await page.evaluate(() => {
+        const images = Array.from(document.querySelectorAll('img'))
+          .map(img => img.src)
+          .filter(src => src && src.startsWith('http') && !src.includes('data:image'));
+          
+        const priceElements = Array.from(document.querySelectorAll('*')).filter(el => {
+          return el.children.length === 0 && el.textContent && el.textContent.includes('฿');
+        });
+        const prices = priceElements.map(el => el.textContent ? el.textContent.trim() : '');
+        
+        const raw_text = document.body.innerText ? document.body.innerText.substring(0, 1500) : '';
+
+        return {
+          images: Array.from(new Set(images)).slice(0, 20),
+          prices: Array.from(new Set(prices)).slice(0, 20),
+          raw_text: raw_text
+        };
+      });
+
       // ค้นหา True Destination URL จาก Deep Link
       let extractedUrl = '';
       for (const link of allPageLinks) {
@@ -170,6 +191,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     original_url: url,
     resolved_url: resolvedUrl,
     source: 'live_compute',
+    scraped_data: scrapedData,
     debug: {
       is_timeout: isTimeout,
       error_message: errorMessage,
