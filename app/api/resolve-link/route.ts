@@ -14,14 +14,14 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
-async function resolveLink(url: string, inject_affiliate: boolean) {
+async function resolveLink(url: string, inject_affiliate: boolean, scrape: boolean = false) {
   if (!url) throw new Error('URL is required');
 
   // 1. Check Redis Cache
   const cacheKey = `resolved_url:${url}`;
   const cachedUrl = await redis.get<string>(cacheKey);
   
-  if (cachedUrl) {
+  if (cachedUrl && !scrape) {
     return {
       status: 'success',
       original_url: url,
@@ -69,7 +69,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
   let isTimeout = false;
   let errorMessage = null;
 
-  if (finalUrl === url) {
+  if (finalUrl === url || scrape) {
     const executablePath = await chromium.executablePath(
       "https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar"
     );
@@ -102,7 +102,7 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
     });
 
     const gotoPromise = async () => {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await page.goto(finalUrl, { waitUntil: 'domcontentloaded' });
       await new Promise(r => setTimeout(r, 2000));
       return page.url();
     };
@@ -154,7 +154,9 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
         }
       }
 
-      if (extractedUrl) {
+      if (scrape) {
+        // If we are scraping, the target was already finalUrl, we just extracted data.
+      } else if (extractedUrl) {
          finalUrl = extractedUrl;
       } else if (interceptedUrl) {
          finalUrl = interceptedUrl;
@@ -205,8 +207,8 @@ async function resolveLink(url: string, inject_affiliate: boolean) {
 
 export async function POST(request: Request) {
   try {
-    const { url, inject_affiliate } = await request.json();
-    const result = await resolveLink(url, inject_affiliate);
+    const { url, inject_affiliate, scrape } = await request.json();
+    const result = await resolveLink(url, inject_affiliate, scrape);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
@@ -220,7 +222,8 @@ export async function GET(request: Request) {
     const url = searchParams.get('url');
     if (!url) return NextResponse.json({ error: 'Please provide ?url= parameter' }, { status: 400 });
     
-    const result = await resolveLink(url, true);
+    const scrape = searchParams.get('scrape') === 'true';
+    const result = await resolveLink(url, true, scrape);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
